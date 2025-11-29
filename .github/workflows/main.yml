@@ -1,0 +1,39 @@
+name: Telegram Bot
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'   # Every 6 hours runner refresh (optional)
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install Dependencies
+      run: |
+        pip install pyTelegramBotAPI
+
+    - name: Create users.json if not exists
+      run: |
+        if [ ! -f "users.json" ]; then
+          echo "{}" > users.json
+        fi
+
+    - name: Run Telegram Bot (Auto-Restart Loop)
+      run: |
+        echo "Starting bot with auto-restart..."
+        while true; do
+          python bot.py || echo "Bot crashed! Restarting..."
+          sleep 2
+        done
+        
